@@ -4,14 +4,17 @@ import javadeveloper.module5.storage.Database;
 import java.sql.SQLException;
 public class App {
     public static void main(String[] args) {
+        Database database = Database.getInstance();
         try {
-            System.out.println(new MaxSalaryWorkerService(Database.getInstance()).findMaxSalaryWorkers());
-            System.out.println(new MaxProjectCountClientService(Database.getInstance()).findMaxProjectCountClients());
-            System.out.println(new LongestProjectService(Database.getInstance()).findLongestProjects());
-            System.out.println(new YoungestEldestWorkerService(Database.getInstance()).findYoungestEldestWorker());
-            System.out.println(new ProjectPricesService(Database.getInstance()).printProjectPrices());
+            System.out.println(new MaxSalaryWorkerService(database).findMaxSalaryWorkers());
+            System.out.println(new MaxProjectCountClientService(database).findMaxProjectCountClients());
+            System.out.println(new LongestProjectService(database).findLongestProjects());
+            System.out.println(new YoungestEldestWorkerService(database).findYoungestEldestWorker());
+            System.out.println(new ProjectPricesService(database).printProjectPrices());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+        } finally {
+            database.close();
         }
     }
 }

@@ -8,15 +8,17 @@ import java.util.List;
 
 public class DatabasePopulateService {
     public static void main(String[] args) throws SQLException {
-        ClientService clientService = new ClientService(Database.getInstance());
-        WorkerService workerService = new WorkerService(Database.getInstance());
-        ProjectService projectService = new ProjectService(Database.getInstance());
-        ProjectWorkerService projectWorkerService = new ProjectWorkerService(Database.getInstance());
+        Database database = Database.getInstance();
+        ClientService clientService = new ClientService(database);
+        WorkerService workerService = new WorkerService(database);
+        ProjectService projectService = new ProjectService(database);
+        ProjectWorkerService projectWorkerService = new ProjectWorkerService(database);
 
         clientService.insertNewClients(initClientList());
         workerService.insertNewWorkers(initWorkerList());
         projectService.insertNewProjects(initProjectList());
         projectWorkerService.insertNewProjectWorker(initProjectWorkerList());
+        database.close();
     }
 
     private static List<Client> initClientList() {

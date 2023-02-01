@@ -11,23 +11,27 @@ import java.util.List;
 
 public class ProjectWorkerService {
     private PreparedStatement insertSt;
-
+    private Connection connection;
     public ProjectWorkerService(Database database) throws SQLException {
-        Connection connection = database.getConnection();
-
+        connection = database.getConnection();
         insertSt = connection.prepareStatement(
                 "INSERT INTO project_worker (project_id, worker_id) VALUES(?, ?)"
         );
     }
 
-    public void insertNewProjectWorker(List<ProjectWorker> projectWorkerList) throws SQLException {
-        for (ProjectWorker projectWorker : projectWorkerList) {
-            insertSt.setInt(1, projectWorker.getProjectId());
-            insertSt.setInt(2, projectWorker.getWorkerId());
-            insertSt.addBatch();
+    public void insertNewProjectWorker(List<ProjectWorker> projectWorkerList) {
+        try {
+            for (ProjectWorker projectWorker : projectWorkerList) {
+                insertSt.setInt(1, projectWorker.getProjectId());
+                insertSt.setInt(2, projectWorker.getWorkerId());
+                insertSt.addBatch();
+            }
+            insertSt.executeBatch();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try { insertSt.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
-
-        insertSt.executeBatch();
     }
 
 }

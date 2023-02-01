@@ -22,11 +22,25 @@ public class Database {
         return connection;
     }
 
+    public void close() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public int executeUpdate(String sql) {
         try (Statement st = connection.createStatement()){
             return st.executeUpdate(sql);
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

@@ -10,22 +10,27 @@ import java.util.List;
 
 public class ClientService {
     private PreparedStatement insertSt;
+    private Connection connection;
 
     public ClientService(Database database) throws SQLException {
-        Connection connection = database.getConnection();
-
+        connection = database.getConnection();
         insertSt = connection.prepareStatement(
                 "INSERT INTO client (id, name) VALUES(?, ?)"
         );
     }
 
-    public void insertNewClients(List<Client> clientList) throws SQLException {
-        for (Client client : clientList) {
-            insertSt.setInt(1, client.getId());
-            insertSt.setString(2, client.getName());
-            insertSt.addBatch();
+    public void insertNewClients(List<Client> clientList) {
+        try {
+            for (Client client : clientList) {
+                insertSt.setInt(1, client.getId());
+                insertSt.setString(2, client.getName());
+                insertSt.addBatch();
+            }
+            insertSt.executeBatch();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try { insertSt.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
-
-        insertSt.executeBatch();
     }
 }

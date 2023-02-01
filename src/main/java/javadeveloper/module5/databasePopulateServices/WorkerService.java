@@ -11,26 +11,31 @@ import java.util.List;
 
 public class WorkerService {
     private PreparedStatement insertSt;
+    private Connection connection;
 
     public WorkerService(Database database) throws SQLException {
-        Connection connection = database.getConnection();
-
+        connection = database.getConnection();
         insertSt = connection.prepareStatement(
                 "INSERT INTO worker (id, name, birthday, level, salary) " +
                         "VALUES(?, ?, ?, ?, ?)"
         );
     }
 
-    public void insertNewWorkers(List<Worker> workerList) throws SQLException {
-        for (Worker worker : workerList) {
-            insertSt.setInt(1, worker.getId());
-            insertSt.setString(2, worker.getName());
-            insertSt.setString(3, worker.getBirthday());
-            insertSt.setString(4, worker.getLevel());
-            insertSt.setInt(5, worker.getSalary());
-            insertSt.addBatch();
+    public void insertNewWorkers(List<Worker> workerList) {
+        try {
+            for (Worker worker : workerList) {
+                insertSt.setInt(1, worker.getId());
+                insertSt.setString(2, worker.getName());
+                insertSt.setString(3, worker.getBirthday());
+                insertSt.setString(4, worker.getLevel());
+                insertSt.setInt(5, worker.getSalary());
+                insertSt.addBatch();
+            }
+            insertSt.executeBatch();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try { insertSt.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
-
-        insertSt.executeBatch();
     }
 }
