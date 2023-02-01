@@ -16,6 +16,8 @@ public class DatabaseInitService {
             throw new RuntimeException(e);
         }
 
-        Database.getInstance().executeUpdate(sqlExpression);
+        Database database = Database.getInstance();
+        database.executeUpdate(sqlExpression);
+        database.close();
     }
 }
