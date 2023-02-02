@@ -9,32 +9,28 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 public class YoungestEldestWorkerService {
     private PreparedStatement selectYoungestAndEldestWorker;
-
-    public YoungestEldestWorkerService(Database database) throws SQLException {
-        Connection connection = database.getConnection();
-        selectYoungestAndEldestWorker = connection.prepareStatement(
-                "SELECT 'YOUNGEST' AS type, name, birthday " +
-                        "FROM worker " +
-                        "WHERE birthday = ? " +
-                        "UNION " +
-                        "SELECT 'ELDEST' AS type, name, birthday " +
-                        "FROM worker " +
-                        "WHERE birthday = ?");
+    private Connection connection;
+    private String sql = "SELECT 'YOUNGEST' AS type, name, birthday " +
+            "FROM worker " +
+            "WHERE birthday = ? " +
+            "UNION " +
+            "SELECT 'ELDEST' AS type, name, birthday " +
+            "FROM worker " +
+            "WHERE birthday = ?";
+    public YoungestEldestWorkerService(Database database) {
+        connection = database.getConnection();
     }
     public List<YoungestEldestWorker> findYoungestEldestWorker() {
         List<YoungestEldestWorker> youngestEldestWorkerList = new ArrayList<>();
+        ResultSet resultSet = null;
 
         try {
+            selectYoungestAndEldestWorker = connection.prepareStatement(sql);
             selectYoungestAndEldestWorker.setString(1, findYoungestWorker());
             selectYoungestAndEldestWorker.setString(2, findEldestWorker());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try(ResultSet resultSet = selectYoungestAndEldestWorker.executeQuery()) {
+            resultSet = selectYoungestAndEldestWorker.executeQuery();
             while (resultSet.next()) {
                 youngestEldestWorkerList.add(new YoungestEldestWorker(
                         resultSet.getString("type"),
@@ -44,6 +40,10 @@ public class YoungestEldestWorkerService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try { selectYoungestAndEldestWorker.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+            if (resultSet != null) { try { resultSet.close(); } catch (SQLException e) { e.printStackTrace(); } }
         }
 
         return youngestEldestWorkerList;

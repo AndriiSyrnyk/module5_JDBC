@@ -9,31 +9,26 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 public class LongestProjectService {
     private PreparedStatement selectByLongestProject;
-
-    public LongestProjectService(Database database) throws SQLException {
-        Connection connection = database.getConnection();
-        selectByLongestProject = connection.prepareStatement(
-                "SELECT CONCAT('Project', id) as name, DATEDIFF(month, start_date, finish_date) AS month_count " +
-                        "FROM (" +
-                        "  SELECT id, start_date, finish_date " +
-                        "  FROM project " +
-                        ") " +
-                        "WHERE DATEDIFF(month, start_date, finish_date)= ?");
+    private Connection connection;
+    private String sql = "SELECT CONCAT('Project', id) as name, DATEDIFF(month, start_date, finish_date) AS month_count " +
+            "FROM (" +
+            "  SELECT id, start_date, finish_date " +
+            "  FROM project " +
+            ") " +
+            "WHERE DATEDIFF(month, start_date, finish_date)= ?";
+    public LongestProjectService(Database database) {
+       connection = database.getConnection();
     }
-
     public List<LongestProject> findLongestProjects() {
         List<LongestProject> longestProjectsList = new ArrayList<>();
+        ResultSet resultSet = null;
 
         try {
+            selectByLongestProject = connection.prepareStatement(sql);
             selectByLongestProject.setInt(1, findLongestProjectDuration());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try(ResultSet resultSet = selectByLongestProject.executeQuery()) {
+            resultSet = selectByLongestProject.executeQuery();
             while (resultSet.next()) {
                 longestProjectsList.add(new LongestProject(
                         resultSet.getString("name"),
@@ -42,6 +37,10 @@ public class LongestProjectService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try { selectByLongestProject.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+            if (resultSet != null) { try { resultSet.close(); } catch (SQLException e) { e.printStackTrace(); } }
         }
 
         return longestProjectsList;

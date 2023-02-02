@@ -13,16 +13,15 @@ public class ProjectService {
     private PreparedStatement insertSt;
     private Connection connection;
 
-    public ProjectService(Database database) throws SQLException {
+    public ProjectService(Database database) {
         connection = database.getConnection();
-        insertSt = connection.prepareStatement(
-                "INSERT INTO project (id, client_id, start_date, finish_date) " +
-                        "VALUES(?, ?, ?, ?)"
-        );
     }
-
     public void insertNewProjects(List<Project> projectList) {
         try {
+            insertSt = connection.prepareStatement(
+                    "INSERT INTO project (id, client_id, start_date, finish_date) " +
+                            "VALUES(?, ?, ?, ?)"
+            );
             for (Project project : projectList) {
                 insertSt.setInt(1, project.getId());
                 insertSt.setInt(2, project.getClientId());
@@ -35,6 +34,7 @@ public class ProjectService {
             e.printStackTrace();
         } finally {
             try { insertSt.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 }

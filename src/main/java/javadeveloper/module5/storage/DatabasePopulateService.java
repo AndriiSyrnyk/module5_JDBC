@@ -3,24 +3,20 @@ package javadeveloper.module5.storage;
 import javadeveloper.module5.databasePopulateServices.*;
 import javadeveloper.module5.databaseTableClasses.*;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class DatabasePopulateService {
-    public static void main(String[] args) throws SQLException {
-        Database database = Database.getInstance();
-        ClientService clientService = new ClientService(database);
-        WorkerService workerService = new WorkerService(database);
-        ProjectService projectService = new ProjectService(database);
-        ProjectWorkerService projectWorkerService = new ProjectWorkerService(database);
+    public static void main(String[] args) {
+        ClientService clientService = new ClientService(Database.getInstance());
+        WorkerService workerService = new WorkerService(Database.getInstance());
+        ProjectService projectService = new ProjectService(Database.getInstance());
+        ProjectWorkerService projectWorkerService = new ProjectWorkerService(Database.getInstance());
 
         clientService.insertNewClients(initClientList());
         workerService.insertNewWorkers(initWorkerList());
         projectService.insertNewProjects(initProjectList());
         projectWorkerService.insertNewProjectWorker(initProjectWorkerList());
-        database.close();
     }
-
     private static List<Client> initClientList() {
         return List.of(new Client(1, "james"),
                 new Client(2, "mary"),

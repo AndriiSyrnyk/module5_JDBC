@@ -12,15 +12,12 @@ public class ClientService {
     private PreparedStatement insertSt;
     private Connection connection;
 
-    public ClientService(Database database) throws SQLException {
+    public ClientService(Database database) {
         connection = database.getConnection();
-        insertSt = connection.prepareStatement(
-                "INSERT INTO client (id, name) VALUES(?, ?)"
-        );
     }
-
     public void insertNewClients(List<Client> clientList) {
         try {
+            insertSt = connection.prepareStatement("INSERT INTO client (id, name) VALUES(?, ?)");
             for (Client client : clientList) {
                 insertSt.setInt(1, client.getId());
                 insertSt.setString(2, client.getName());
@@ -29,8 +26,10 @@ public class ClientService {
             insertSt.executeBatch();
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
+        }
+        finally {
             try { insertSt.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 }

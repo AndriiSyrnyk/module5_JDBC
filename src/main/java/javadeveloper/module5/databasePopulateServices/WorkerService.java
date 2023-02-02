@@ -13,16 +13,15 @@ public class WorkerService {
     private PreparedStatement insertSt;
     private Connection connection;
 
-    public WorkerService(Database database) throws SQLException {
+    public WorkerService(Database database) {
         connection = database.getConnection();
-        insertSt = connection.prepareStatement(
-                "INSERT INTO worker (id, name, birthday, level, salary) " +
-                        "VALUES(?, ?, ?, ?, ?)"
-        );
     }
-
     public void insertNewWorkers(List<Worker> workerList) {
         try {
+            insertSt = connection.prepareStatement(
+                    "INSERT INTO worker (id, name, birthday, level, salary) " +
+                            "VALUES(?, ?, ?, ?, ?)"
+            );
             for (Worker worker : workerList) {
                 insertSt.setInt(1, worker.getId());
                 insertSt.setString(2, worker.getName());
@@ -36,6 +35,7 @@ public class WorkerService {
             e.printStackTrace();
         } finally {
             try { insertSt.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 }

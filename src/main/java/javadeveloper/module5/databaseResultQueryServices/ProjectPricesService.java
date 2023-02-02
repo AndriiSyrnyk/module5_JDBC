@@ -9,31 +9,31 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 public class ProjectPricesService {
     private PreparedStatement selectProjectPrices;
-
-    public ProjectPricesService(Database database) throws SQLException {
-        Connection connection = database.getConnection();
-        selectProjectPrices = connection.prepareStatement(
-                "SELECT CONCAT('Project', id_project) as name, SUM(duration_in_months * salary) AS price " +
-                        "FROM (" +
-                        "SELECT id_project, DATEDIFF(month, start_date, finish_date) AS duration_in_months, worker.salary AS salary " +
-                        "FROM (" +
-                        "SELECT id AS id_project, start_date, finish_date " +
-                        "FROM project) " +
-                        "INNER JOIN project_worker " +
-                        "ON id_project = project_worker.project_id " +
-                        "INNER JOIN worker " +
-                        "ON project_worker.worker_id = worker.ID) " +
-                        "GROUP BY id_project " +
-                        "ORDER BY price DESC");
+    private Connection connection;
+    private String sql = "SELECT CONCAT('Project', id_project) as name, SUM(duration_in_months * salary) AS price " +
+            "FROM (" +
+            "SELECT id_project, DATEDIFF(month, start_date, finish_date) AS duration_in_months, worker.salary AS salary " +
+            "FROM (" +
+            "SELECT id AS id_project, start_date, finish_date " +
+            "FROM project) " +
+            "INNER JOIN project_worker " +
+            "ON id_project = project_worker.project_id " +
+            "INNER JOIN worker " +
+            "ON project_worker.worker_id = worker.ID) " +
+            "GROUP BY id_project " +
+            "ORDER BY price DESC";
+    public ProjectPricesService(Database database) {
+        connection = database.getConnection();
     }
-
     public List<ProjectPrices> printProjectPrices () {
         List<ProjectPrices> projectPricesList = new ArrayList<>();
+        ResultSet resultSet = null;
 
-        try(ResultSet resultSet = selectProjectPrices.executeQuery()) {
+        try {
+            selectProjectPrices = connection.prepareStatement(sql);
+            resultSet = selectProjectPrices.executeQuery();
             while (resultSet.next()) {
                 projectPricesList.add(new ProjectPrices(
                         resultSet.getString("name"),
@@ -42,6 +42,10 @@ public class ProjectPricesService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try { selectProjectPrices.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+            if (resultSet != null) { try { resultSet.close(); } catch (SQLException e) { e.printStackTrace(); } }
         }
 
         return projectPricesList;

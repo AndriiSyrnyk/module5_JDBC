@@ -12,15 +12,14 @@ import java.util.List;
 public class ProjectWorkerService {
     private PreparedStatement insertSt;
     private Connection connection;
-    public ProjectWorkerService(Database database) throws SQLException {
+    public ProjectWorkerService(Database database) {
         connection = database.getConnection();
-        insertSt = connection.prepareStatement(
-                "INSERT INTO project_worker (project_id, worker_id) VALUES(?, ?)"
-        );
     }
-
     public void insertNewProjectWorker(List<ProjectWorker> projectWorkerList) {
         try {
+            insertSt = connection.prepareStatement(
+                    "INSERT INTO project_worker (project_id, worker_id) VALUES(?, ?)"
+            );
             for (ProjectWorker projectWorker : projectWorkerList) {
                 insertSt.setInt(1, projectWorker.getProjectId());
                 insertSt.setInt(2, projectWorker.getWorkerId());
@@ -31,6 +30,7 @@ public class ProjectWorkerService {
             e.printStackTrace();
         } finally {
             try { insertSt.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 

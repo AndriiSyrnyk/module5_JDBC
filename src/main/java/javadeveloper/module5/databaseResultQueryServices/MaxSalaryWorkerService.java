@@ -9,24 +9,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 public class MaxSalaryWorkerService {
     private PreparedStatement selectByMaxSalary;
-    public MaxSalaryWorkerService(Database database) throws SQLException {
-        Connection connection = database.getConnection();
-        selectByMaxSalary = connection.prepareStatement(
-                "SELECT name, salary FROM worker WHERE salary = ?");
+    private Connection connection;
+    private String sql = "SELECT name, salary FROM worker WHERE salary = ?";
+    public MaxSalaryWorkerService(Database database)  {
+        connection = database.getConnection();
     }
     public List<MaxSalaryWorker> findMaxSalaryWorkers() {
         List<MaxSalaryWorker> maxSalaryWorkerList = new ArrayList<>();
-
+        ResultSet resultSet = null;
         try {
+            selectByMaxSalary = connection.prepareStatement(sql);
             selectByMaxSalary.setInt(1, findMaxSalary());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try(ResultSet resultSet = selectByMaxSalary.executeQuery()) {
+            resultSet = selectByMaxSalary.executeQuery();
             while (resultSet.next()) {
                 maxSalaryWorkerList.add(new MaxSalaryWorker(
                         resultSet.getString("name"),
@@ -35,11 +31,14 @@ public class MaxSalaryWorkerService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try { selectByMaxSalary.close(); } catch (SQLException e) { e.printStackTrace(); }
+            try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
+            if (resultSet != null) { try { resultSet.close(); } catch (SQLException e) { e.printStackTrace(); } }
         }
 
         return maxSalaryWorkerList;
     }
-
     private int findMaxSalary() {
         String sql = "SELECT MAX(salary) AS max_salary FROM worker";
 
