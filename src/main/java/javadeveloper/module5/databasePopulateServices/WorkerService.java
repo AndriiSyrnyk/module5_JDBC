@@ -1,6 +1,5 @@
 package javadeveloper.module5.databasePopulateServices;
 
-import javadeveloper.module5.databaseTableClasses.Project;
 import javadeveloper.module5.databaseTableClasses.Worker;
 import javadeveloper.module5.storage.Database;
 
@@ -8,20 +7,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-
 public class WorkerService {
-    private PreparedStatement insertSt;
-    private Connection connection;
-
-    public WorkerService(Database database) {
-        connection = database.getConnection();
+    private Database database;
+    private String sqlQuery = "INSERT INTO worker (id, name, birthday, level, salary) " +
+            "VALUES(?, ?, ?, ?, ?)";
+    public WorkerService(Database db) {
+        database = db;
     }
     public void insertNewWorkers(List<Worker> workerList) {
-        try {
-            insertSt = connection.prepareStatement(
-                    "INSERT INTO worker (id, name, birthday, level, salary) " +
-                            "VALUES(?, ?, ?, ?, ?)"
-            );
+        try (Connection connection = database.getConnection();
+             PreparedStatement insertSt = connection.prepareStatement(sqlQuery)) {
             for (Worker worker : workerList) {
                 insertSt.setInt(1, worker.getId());
                 insertSt.setString(2, worker.getName());
@@ -33,9 +28,6 @@ public class WorkerService {
             insertSt.executeBatch();
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try { insertSt.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 }

@@ -1,6 +1,5 @@
 package javadeveloper.module5.databasePopulateServices;
 
-import javadeveloper.module5.databaseTableClasses.Client;
 import javadeveloper.module5.databaseTableClasses.ProjectWorker;
 import javadeveloper.module5.storage.Database;
 
@@ -8,18 +7,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-
 public class ProjectWorkerService {
-    private PreparedStatement insertSt;
-    private Connection connection;
-    public ProjectWorkerService(Database database) {
-        connection = database.getConnection();
+    private Database database;
+    private String sqlQuery = "INSERT INTO project_worker (project_id, worker_id) VALUES(?, ?)";
+    public ProjectWorkerService(Database db) {
+        database = db;
     }
     public void insertNewProjectWorker(List<ProjectWorker> projectWorkerList) {
-        try {
-            insertSt = connection.prepareStatement(
-                    "INSERT INTO project_worker (project_id, worker_id) VALUES(?, ?)"
-            );
+        try (Connection connection = database.getConnection();
+             PreparedStatement insertSt = connection.prepareStatement(sqlQuery)){
             for (ProjectWorker projectWorker : projectWorkerList) {
                 insertSt.setInt(1, projectWorker.getProjectId());
                 insertSt.setInt(2, projectWorker.getWorkerId());
@@ -28,10 +24,6 @@ public class ProjectWorkerService {
             insertSt.executeBatch();
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try { insertSt.close(); } catch (SQLException e) { e.printStackTrace(); }
-            try { connection.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
-
 }

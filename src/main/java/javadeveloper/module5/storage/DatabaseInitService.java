@@ -3,21 +3,29 @@ package javadeveloper.module5.storage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DatabaseInitService {
     public static void main(String[] args) {
         String initDbFileName = "sql/init_db.sql.sql";
-        String sqlExpression;
+        String sqlInitDbExpression = "";
 
         try {
-            sqlExpression = String.join("\n",
+            sqlInitDbExpression = String.join("\n",
                     Files.readAllLines(Path.of(initDbFileName)));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
 
         Database database = Database.getInstance();
-        database.executeUpdate(sqlExpression);
-        database.close();
+
+        try (Connection connection = database.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate(sqlInitDbExpression);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
